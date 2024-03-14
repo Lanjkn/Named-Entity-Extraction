@@ -1,0 +1,6 @@
+transformers
+torch
+uvicorn
+pydantic
+fastapi
+fasttext

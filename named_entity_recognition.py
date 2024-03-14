@@ -6,19 +6,19 @@ class NERecognition:
         self.model_en_us = pipeline("text2text-generation", model="cnmoro/t5-small-named-entity-recognition")
         self.model_pt_br = pipeline("text2text-generation", model="cnmoro/ptt5-small-named-entity-recognition")
         self.lang_detector = fasttext.load_model('lid.176.ftz')
-        self.tokenizer = AutoTokenizer.from_pretrained("cnmoro/t5-small-named-entity-recognition")
+        self.tokenizer_en_us = AutoTokenizer.from_pretrained("cnmoro/t5-small-named-entity-recognition")
+        self.tokenizer_pt_br = AutoTokenizer.from_pretrained("cnmoro/ptt5-small-named-entity-recognition")
 
     def recognize(self, text):
+        language = self._detect_language(text[0:1000])
+        self.tokenizer = self.tokenizer_en_us if language == 'en' else self.tokenizer_pt_br
+
         all_parts_of_text = self._split_into_chunks_of_390_tokens(text)
 
         named_entities = []
 
         for parts in all_parts_of_text:
-            language = self._detect_language(parts)
-            if language == 'en':
-                self.model = self.model_en_us
-            else:
-                self.model = self.model_pt_br
+            self.model = self.model_en_us if language == 'en' else self.model_pt_br
 
             result = self.model(parts, 
                                 repetition_penalty = 1.5,
